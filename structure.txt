@@ -1,0 +1,76 @@
+основной скрипт
+    ├── __not_used
+    │   ├── bybit_exchange_fixed_savings.py
+    │   └── bybit_exchange_flexible_savings.py
+    ├── __pycache__
+    │   ├── config.cpython-311.pyc
+    │   ├── config.cpython-314.pyc
+    │   ├── main.cpython-311.pyc
+    │   ├── main.cpython-314.pyc
+    │   ├── telegram_bot.cpython-311.pyc
+    │   └── telegram_bot.cpython-314.pyc
+    ├── core
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-311.pyc
+    │   │   ├── __init__.cpython-314.pyc
+    │   │   ├── arbitrage_analyzer.cpython-311.pyc
+    │   │   ├── arbitrage_analyzer.cpython-314.pyc
+    │   │   ├── cross_exchange_analyzer.cpython-311.pyc
+    │   │   ├── cross_exchange_analyzer.cpython-314.pyc
+    │   │   ├── telegram_notifier.cpython-311.pyc
+    │   │   └── telegram_notifier.cpython-314.pyc
+    │   ├── __init__.py
+    │   ├── arbitrage_analyzer.py
+    │   ├── cross_exchange_analyzer.py
+    │   └── telegram_notifier.py
+    ├── exchanges
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-311.pyc
+    │   │   ├── __init__.cpython-314.pyc
+    │   │   ├── base_exchange.cpython-311.pyc
+    │   │   ├── base_exchange.cpython-314.pyc
+    │   │   ├── binance_exchange.cpython-311.pyc
+    │   │   ├── bybit_exchange.cpython-311.pyc
+    │   │   ├── bybit_exchange.cpython-314.pyc
+    │   │   ├── bybit_exchange_fixed_savings.cpython-314.pyc
+    │   │   ├── bybit_exchange_flexible_savings.cpython-314.pyc
+    │   │   ├── bybit_exchange_onchain.cpython-314.pyc
+    │   │   ├── okx_exchange.cpython-311.pyc
+    │   │   └── okx_exchange.cpython-314.pyc
+    │   ├── binance
+    │   │   ├── __init__.py
+    │   │   ├── binance_exchange.py
+    │   │   ├── binance_flexible_savings.py
+    │   │   ├── binance_loans.py
+    │   │   └── binance_onchain_savings.py
+    │   ├── bybit
+    │   │   ├── __pycache__
+    │   │   │   ├── __init__.cpython-314.pyc
+    │   │   │   └── bybit_exchange.cpython-314.pyc
+    │   │   ├── __init__.py
+    │   │   ├── bybit_exchange.py
+    │   │   ├── bybit_flexible_savings.py
+    │   │   ├── bybit_loans.py
+    │   │   └── bybit_onchain_savings.py
+    │   ├── okx
+    │   │   ├── __init__.py
+    │   │   ├── okx_exchange.py
+    │   │   ├── okx_flexible_savings.py
+    │   │   ├── okx_loans.py
+    │   │   └── okx_onchain_savings.py
+    │   ├── __init__.py
+    │   └── base_exchange.py
+    ├── utils
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-314.pyc
+    │   │   ├── data_normalizer.cpython-311.pyc
+    │   │   └── data_normalizer.cpython-314.pyc
+    │   ├── __init__.py
+    │   └── data_normalizer.py
+    ├── .env
+    ├── bot_runner.py
+    ├── config.py
+    ├── main.py
+    ├── requirements.txt
+    ├── structure.txt
+    └── telegram_bot.py

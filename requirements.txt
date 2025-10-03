@@ -1,0 +1,8 @@
+python-telegram-bot
+requests
+urllib3
+aiohttp
+asyncio
+python-dotenv
+aiogram
+telethon
