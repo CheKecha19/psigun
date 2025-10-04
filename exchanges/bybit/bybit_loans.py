@@ -45,22 +45,27 @@ class BybitLoans:
     def _normalize_loan_data(self, raw_data: Dict) -> Dict[str, Dict]:
         """Нормализовать данные о займах"""
         normalized = {}
-        
+    
         for coin in raw_data["result"].get("list", []):
             currency = coin.get("currency", "").upper()
             flexible_rate = coin.get("flexibleAnnualizedInterestRate")
             min_loan = coin.get("minLoanAmount", 0)
             max_loan = coin.get("maxLoanAmount", 0)
-            
+        
             if currency and flexible_rate and flexible_rate != "":
                 try:
+                    # УМНОЖАЕМ НА 100 ДЛЯ ПРЕОБРАЗОВАНИЯ В ПРОЦЕНТЫ
+                    rate = float(flexible_rate) * 100
+                
                     normalized[currency] = {
-                        'rate': float(flexible_rate),
+                        'rate': rate,
                         'min_amount': float(min_loan) if min_loan else 0,
                         'max_amount': float(max_loan) if max_loan else 0
                     }
-                except (ValueError, TypeError):
+                    print(f"   💰 {currency}: {rate:.2f}% годовых (исправлено)")
+                except (ValueError, TypeError) as e:
+                    print(f"   ❌ Ошибка конвертации для {currency}: {flexible_rate} - {e}")
                     continue
-        
-        print(f"📊 Bybit: нормализовано {len(normalized)} ставок по займам")
+    
+        print(f"📊 Bybit: нормализовано {len(normalized)} ставок по займам (с умножением на 100)")
         return normalized

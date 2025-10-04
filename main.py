@@ -131,77 +131,79 @@ class ArbitrageBot:
         """Найти внутрибиржевые возможности"""
         print("\n🎯 ПОИСК ВНУТРИБИРЖЕВЫХ ВОЗМОЖНОСТЕЙ...")
         intra_opportunities = []
-        
+    
         for exchange_name, data in all_data.items():
             exchange = data['exchange']
             loan_rates = data['loan_rates']
             staking_rates = data['staking_rates']
-            
+        
             print(f"\n🔍 Анализ {exchange_name}...")
-            
+        
             # Находим общие монеты
             common_coins = set(loan_rates.keys()) & set(staking_rates.keys())
             print(f"   📊 Общих монет: {len(common_coins)}")
-            
+        
             for coin in common_coins:
                 lending_info = loan_rates[coin]
                 staking_info = staking_rates[coin]
                 lending_rate = lending_info['rate']
                 staking_apy = staking_info['apy']
                 net_profit = staking_apy - lending_rate
-                
+            
                 if net_profit >= self.analyzer.min_profit_threshold:
                     intra_opportunities.append({
                         "coin": coin,
                         "borrow_rate": lending_rate,
                         "borrow_exchange": exchange_name,
                         "staking_apy": staking_apy,
-                        "staking_exchange": exchange_name,
+                        "staking_exchange": exchange_name,  # Всегда одинаковая биржа
                         "net_profit": net_profit,
                         "profitability": exchange.get_profitability_label(net_profit),
                         "type": "intra"
                     })
-        
-        # Сортируем по убыванию прибыли
+    
+        # СОРТИРОВКА ПО УБЫВАНИЮ ПРИБЫЛИ
         return sorted(intra_opportunities, key=lambda x: x["net_profit"], reverse=True)
     
     def find_cross_exchange_opportunities(self, all_data: Dict):
         """Найти межбиржевые возможности"""
         print("\n🌐 ПОИСК МЕЖБИРЖЕВЫХ ВОЗМОЖНОСТЕЙ...")
         cross_opportunities = []
-        
+    
         # Собираем все стейкинги и займы в общие пулы
         all_staking_rates = {}
         all_loan_rates = {}
-        
+    
         for exchange_name, data in all_data.items():
             all_staking_rates[exchange_name] = data['staking_rates']
             all_loan_rates[exchange_name] = data['loan_rates']
-        
+    
         # Ищем лучшие комбинации
         for coin in self._get_all_coins(all_data):
             best_staking = self._find_best_staking(coin, all_staking_rates)
             best_loan = self._find_best_loan(coin, all_loan_rates)
-            
+        
             if best_staking and best_loan:
                 staking_exchange, staking_apy = best_staking
                 loan_exchange, loan_rate = best_loan
+            
+                # УБЕДИМСЯ, ЧТО БИРЖИ РАЗНЫЕ
+                if staking_exchange != loan_exchange:
+                    net_profit = staking_apy - loan_rate
                 
-                net_profit = staking_apy - loan_rate
-                
-                if net_profit >= self.cross_analyzer.min_profit_threshold:
-                    cross_opportunities.append({
-                        "coin": coin,
-                        "borrow_rate": loan_rate,
-                        "borrow_exchange": loan_exchange,
-                        "staking_apy": staking_apy,
-                        "staking_exchange": staking_exchange,
-                        "net_profit": net_profit,
-                        "profitability": self._get_profitability_label(net_profit),
-                        "type": "cross"
-                    })
-        
-        # Сортируем по убыванию прибыли
+                    if net_profit >= self.cross_analyzer.min_profit_threshold:
+                        cross_opportunities.append({
+                            "coin": coin,
+                            "borrow_rate": loan_rate,
+                            "borrow_exchange": loan_exchange,
+                            "staking_apy": staking_apy,
+                            "staking_exchange": staking_exchange,
+                            "net_profit": net_profit,
+                            "profitability": self._get_profitability_label(net_profit),
+                            "type": "cross"
+                        })
+    
+        # СОРТИРОВКА ПО УБЫВАНИЮ ПРИБЫЛИ
         return sorted(cross_opportunities, key=lambda x: x["net_profit"], reverse=True)
     
     def _get_all_coins(self, all_data: Dict):
@@ -245,29 +247,41 @@ class ArbitrageBot:
         return DataNormalizer.get_profitability_label(net_profit)
     
     def create_summary_table(self, intra_opportunities: List, cross_opportunities: List):
-        """Создать сводную таблицу всех возможностей"""
+        """Создать сводную таблицу всех возможностей БЕЗ ДУБЛИКАТОВ"""
         print("\n📈 СОЗДАНИЕ СВОДНОЙ ТАБЛИЦЫ...")
-        
-        # Объединяем все возможности
-        all_opportunities = intra_opportunities + cross_opportunities
-        
-        # Сортируем по убыванию прибыли
-        all_opportunities = sorted(all_opportunities, key=lambda x: x["net_profit"], reverse=True)
-        
-        return all_opportunities
+    
+        # Создаем словарь для уникальных возможностей
+        # Ключ: (coin, borrow_exchange, staking_exchange)
+        unique_opportunities = {}
+    
+        # Добавляем внутрибиржевые возможности
+        for opp in intra_opportunities:
+            key = (opp["coin"], opp["borrow_exchange"], opp["staking_exchange"])
+            if key not in unique_opportunities:
+                unique_opportunities[key] = opp
+    
+        # Добавляем межбиржевые возможности
+        for opp in cross_opportunities:
+            key = (opp["coin"], opp["borrow_exchange"], opp["staking_exchange"])
+            if key not in unique_opportunities:
+                unique_opportunities[key] = opp
+    
+        # Преобразуем обратно в список и сортируем по убыванию прибыли
+        all_opportunities = list(unique_opportunities.values())
+        return sorted(all_opportunities, key=lambda x: x["net_profit"], reverse=True)
     
     def display_results(self, intra_opportunities: List, cross_opportunities: List, summary_opportunities: List):
         """Показать результаты в консоли"""
-        
-        # Внутрибиржевые возможности
+    
+        # Внутрибиржевые возможности (уже отсортированы)
         print(f"\n🎯 ВНУТРИБИРЖЕВЫЕ ВОЗМОЖНОСТИ (топ-20):")
         self._display_opportunities_table(intra_opportunities[:20], "intra")
-        
-        # Межбиржевые возможности
+    
+        # Межбиржевые возможности (уже отсортированы)
         print(f"\n🌐 МЕЖБИРЖЕВЫЕ ВОЗМОЖНОСТИ (топ-20):")
         self._display_opportunities_table(cross_opportunities[:20], "cross")
-        
-        # Сводная таблица
+    
+        # Сводная таблица (уже отсортирована и без дубликатов)
         print(f"\n📊 СВОДНАЯ ТАБЛИЦА ВСЕХ ВОЗМОЖНОСТЕЙ (топ-20):")
         self._display_opportunities_table(summary_opportunities[:20], "summary")
     
