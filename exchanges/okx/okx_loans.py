@@ -89,30 +89,31 @@ class OkxLoans:
     def _normalize_loan_data(self, raw_data: Dict) -> Dict[str, Dict]:
         """Нормализовать данные о займах"""
         normalized = {}
-        
+    
         try:
             data_list = raw_data.get("data", [])
-            
+        
             for item in data_list:
                 currency = item.get("ccy", "").upper()
                 interest_rate = item.get("interestRate")
-                
+            
                 if currency and interest_rate is not None:
                     try:
-                        rate = float(interest_rate) * 365 * 100  # Конвертируем в годовую ставку
-                        
+                        # УМНОЖАЕМ НА 100 ДЛЯ ПРЕОБРАЗОВАНИЯ В ПРОЦЕНТЫ
+                        rate = float(interest_rate) * 100  # Убираем умножение на 365
+                    
                         normalized[currency] = {
                             'rate': rate,
                             'min_amount': 0,
                             'max_amount': 0
                         }
-                        print(f"   💰 {currency}: {rate:.2f}% годовых")
+                        print(f"   💰 {currency}: {rate:.2f}% годовых (исправлено)")
                     except (ValueError, TypeError):
                         continue
-            
-            print(f"📊 OKX: нормализовано {len(normalized)} ставок по займам")
+        
+            print(f"📊 OKX: нормализовано {len(normalized)} ставок по займам (с умножением на 100)")
             return normalized
-            
+        
         except Exception as e:
             print(f"❌ Ошибка нормализации данных о займах OKX: {e}")
             return self._get_sample_loan_rates()
